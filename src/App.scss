@@ -1,0 +1,116 @@
+$bc: #282c34;
+$tc: #a8acb4;
+
+body {
+	background-color: $bc;
+	margin: 0;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+		'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+		sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	color: $tc;
+}
+
+.App {
+	height: 100vh;
+	// align-items: center;
+	justify-content: center;
+	display: flex;
+}
+
+.cards {
+	margin: auto;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: center;
+	.card {
+		width: 350px;
+		height: 250px;
+		display: flex;
+		margin: 10px;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 0 3px white;
+		font-size: x-large;
+	}
+}
+
+a {
+	text-decoration: none;
+	color: $tc;
+}
+
+a:visited {
+	color: rgb(44, 46, 54);
+}
+
+a:hover,
+button:hover {
+	color: rgb(197, 14, 14);
+}
+
+input:focus,
+select:focus,
+button:focus {
+	outline: none;
+}
+
+.patients-list {
+	padding: 40px 20px;
+	input {
+		width: 90vw;
+		font-size: x-large;
+	}
+	ul {
+		padding: 0;
+		list-style-type: none;
+		p {
+			margin: 0;
+		}
+		li {
+			display: flex;
+			padding: 15px;
+			margin-top: 5px;
+			font-size: large;
+			box-shadow: 0 0 3px white;
+			justify-content: space-between;
+			div {
+				display: flex;
+				width: 45%;
+				justify-content: space-between;
+			}
+		}
+	}
+}
+
+.new-patient {
+	padding: 40px 20px;
+	p {
+		font-size: xx-large;
+		text-align: center;
+	}
+	input {
+		padding: 10px;
+		margin: 5px;
+		width: 94%;
+		align-items: center;
+		font-size: large;
+	}
+	.date {
+		display: flex;
+		* {
+			width: 47%;
+		}
+	}
+	button {
+		margin: 5px;
+		width: 98%;
+		height: 5vh;
+		font-size: large;
+		border: none;
+	}
+}
