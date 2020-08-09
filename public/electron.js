@@ -45,10 +45,15 @@ app.on('activate', () => {
 ipcMain.on('getPatients', async (e, arg) => {
 	const patients = await Patients.findAll();
 	const filtered = patients.filter(
-		(el) => el.name.toLowerCase().indexOf(arg.name) !== -1
+		(el) => el.name.toLowerCase().indexOf(arg.name.toLowerCase()) !== -1
 	);
 	if (filtered.length > 0) e.reply('getPatients-reply', { data: filtered });
 	else e.reply('getPatients-reply', { data: [] });
+});
+
+ipcMain.on('getPatient', async (e, arg) => {
+	const patient = await Patients.findOne({ where: { id: arg.id } });
+	e.reply('getPatient-reply', { data: patient });
 });
 
 ipcMain.on('getSettle', async (e, arg) => {
@@ -60,9 +65,16 @@ ipcMain.on('getSettle', async (e, arg) => {
 });
 
 ipcMain.on('addPatient', async (e, arg) => {
-	const { name, birthday, settle } = arg;
-	const patient = await Patients.create({ name, birthday, settle });
+	const patient = await Patients.create(arg);
 	if (patient) e.reply('addPatient-reply', { status: true });
-	// const settles = settlesDate.map((el) => el.settle);
-	// if (settles.length > 0) e.reply('addPatient-reply', { settles });
+});
+
+ipcMain.on('editPatient', async (e, arg) => {
+	const patient = await Patients.findOne({ where: { id: arg.id } });
+	patient.name = arg.name;
+	patient.birthday = arg.birthday;
+	patient.settle = arg.settle;
+	patient.sex = arg.sex;
+	patient.save();
+	e.reply('editPatient-reply', { status: true });
 });

@@ -6,10 +6,7 @@ const Diagnostic = () => {
 	const [patients, setPatients] = useState([]);
 	useEffect(() => {
 		ipcRenderer.send('getPatients', { name: '' });
-		ipcRenderer.on('getPatients-reply', (event, arg) => {
-			console.log(arg.data);
-			setPatients(arg.data);
-		});
+		ipcRenderer.on('getPatients-reply', (event, arg) => setPatients(arg.data));
 		return () => ipcRenderer.removeAllListeners('getPatients-reply');
 	}, []);
 	return (
@@ -29,7 +26,7 @@ const Diagnostic = () => {
 							<p>{el.dataValues.settle}</p>
 						</div>
 						<div>
-							<p>Редагувати</p>
+							<Link to={`/edit/${el.dataValues.id}`}>Редагувати</Link>
 							<p>Видалити</p>
 							<p>Продовжити</p>
 						</div>

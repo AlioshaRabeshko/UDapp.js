@@ -7,6 +7,7 @@ Patients.init(
 		name: DataTypes.STRING,
 		settle: DataTypes.STRING,
 		birthday: DataTypes.DATE,
+		sex: DataTypes.BOOLEAN,
 	},
 	{ sequelize, modelName: 'patients' }
 );

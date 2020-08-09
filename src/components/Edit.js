@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 const { ipcRenderer } = window.require('electron');
 
 const NewPatient = () => {
@@ -7,38 +7,52 @@ const NewPatient = () => {
 	const [name, setName] = useState(false);
 	const [settle, setSettle] = useState(false);
 	const [settles, setSettles] = useState([]);
-	const [sex, setSex] = useState(true);
+	const [sex, setSex] = useState();
+	const { id } = useParams();
 	const history = useHistory();
 	useEffect(() => {
 		ipcRenderer.send('getSettle');
 		ipcRenderer.on('getSettle-reply', (event, arg) => {
 			setSettles(arg.settles);
 		});
-		ipcRenderer.on('addPatient-reply', (event, arg) => {
-			if (arg.status) history.push('/diagnostic');
+		ipcRenderer.send('getPatient', { id });
+		ipcRenderer.on('getPatient-reply', (event, arg) => {
+			const [mm, dd, yy] = arg.data.dataValues.birthday
+				.toLocaleDateString('en-US')
+				.split('/');
+			setDate(`${yy}-${mm < 10 ? '0' + mm : mm}-${dd < 10 ? '0' + dd : dd}`);
+			setName(arg.data.dataValues.name);
+			setSettle(arg.data.dataValues.settle);
+			setSex(arg.data.dataValues.sex);
+		});
+		ipcRenderer.on('editPatient-reply', (event, arg) => {
+			if (arg.status) history.goBack();
 		});
 		return () => {
+			ipcRenderer.removeAllListeners('editPatient-reply');
 			ipcRenderer.removeAllListeners('getSettle-reply');
-			ipcRenderer.removeAllListeners('addPatient-reply');
+			ipcRenderer.removeAllListeners('getPatient-reply');
 		};
-	}, [history]);
+	}, [history, id]);
 	const newPatient = () => {
 		if (!name) return;
 		if (!date) return;
 		if (!settle) return;
-		ipcRenderer.send('addPatient', {
+		ipcRenderer.send('editPatient', {
 			name,
 			birthday: new Date(date),
 			settle,
 			sex,
+			id,
 		});
 	};
 	return (
 		<div className="new-patient">
-			<p>Добавити нового пацієнта в базу даних</p>
+			<p>Редагувати дані про пацієнта</p>
 			<input
 				type="text"
 				placeholder="Призвіще Ім'я По-батькові"
+				value={name}
 				onChange={(e) => setName(e.target.value)}
 			/>
 			<div className="date">
@@ -46,6 +60,7 @@ const NewPatient = () => {
 					type="date"
 					id="start"
 					name="trip-start"
+					value={date}
 					onChange={(e) => setDate(e.target.value)}
 					min="1930-01-01"
 					max="2025-12-31"
@@ -53,7 +68,7 @@ const NewPatient = () => {
 				<input
 					type="text"
 					list="settlement"
-					placeholder="Місце проживання"
+					value={settle}
 					onChange={(e) => setSettle(e.target.value)}
 				/>
 				<datalist id="settlement">
@@ -66,18 +81,23 @@ const NewPatient = () => {
 						<input
 							type="radio"
 							defaultChecked={sex}
-							onClick={() => setSex(true)}
+							onChange={() => setSex(true)}
 							name="sex"
 						/>
 						Чоловік
 					</label>
 					<label>
-						<input type="radio" onClick={() => setSex(false)} name="sex" />
+						<input
+							type="radio"
+							defaultChecked={!sex}
+							onChange={() => setSex(false)}
+							name="sex"
+						/>
 						Жінка
 					</label>
 				</div>
 			</div>
-			<button onClick={newPatient}>Добавити</button>
+			<button onClick={newPatient}>Зберегти</button>
 		</div>
 	);
 };

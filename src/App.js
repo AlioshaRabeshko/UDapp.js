@@ -7,6 +7,7 @@ import Settings from './components/Settings';
 import DataBase from './components/DataBase';
 import Reports from './components/Reports';
 import NewPatient from './components/NewPatient';
+import Edit from './components/Edit';
 
 const App = () => {
 	return (
@@ -17,6 +18,7 @@ const App = () => {
 				<Route path="/reports" component={Reports} />
 				<Route path="/settings" component={Settings} />
 				<Route path="/newpatient" component={NewPatient} />
+				<Route path="/edit/:id" component={Edit} />
 				<Route path="/" component={Nav} />
 			</Switch>
 		</div>
