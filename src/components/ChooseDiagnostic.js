@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useHistory, useParams } from 'react-router-dom';
 import Popup from 'reactjs-popup';
 const { ipcRenderer, remote } = window.require('electron');
 
-const ChoosePatient = () => {
-	const [patients, setPatients] = useState([]);
+const ChooseDiagnostic = () => {
+	const [diagnostics, setDiagnostics] = useState([]);
 	const history = useHistory();
+	const { patientId } = useParams();
 	useEffect(() => {
-		ipcRenderer.send('getPatients', { name: '' });
-		ipcRenderer.on('getPatients-reply', (event, arg) => setPatients(arg.data));
-		return () => ipcRenderer.removeAllListeners('getPatients-reply');
+		ipcRenderer.send('getDiagnostics');
+		ipcRenderer.on('getDiagnostics-reply', (event, arg) => {
+			setDiagnostics(arg.data);
+			console.log(arg);
+		});
+		return () => ipcRenderer.removeAllListeners('getDiagnostics-reply');
 	}, []);
 	return (
 		<div className="container">
@@ -34,40 +38,21 @@ const ChoosePatient = () => {
 				</Popup>
 			</div>
 			<div className="patients-list">
-				<input
-					type="text"
-					placeholder="Ім'я пацієнта"
-					onChange={(e) =>
-						ipcRenderer.send('getPatients', { name: e.target.value })
-					}
-				/>
 				<ul>
-					{patients.map((el, id) => (
+					{diagnostics.map((el, id) => (
 						<li key={id}>
-							<div>
-								<p>{el.dataValues.name}</p>
-								<p>{el.dataValues.settle}</p>
+							<div className="diagnostic-p">
+								<p>{el.name}</p>
 							</div>
-							<div>
-								<Link to={`/edit/${el.dataValues.id}`}>Редагувати</Link>
-								<p>Видалити</p>
-								<Link to={`/choosediagnostic/${el.dataValues.id}`}>
-									Продовжити
-								</Link>
+							<div className="diagnostic-p">
+								<Link to={`/diagnostic/${patientId}/${el.id}`}>Продовжити</Link>
 							</div>
 						</li>
 					))}
-					<Link to="/newpatient">
-						<li>
-							<div>
-								<p>Створити</p>
-							</div>
-						</li>
-					</Link>
 				</ul>
 			</div>
 		</div>
 	);
 };
 
-export default ChoosePatient;
+export default ChooseDiagnostic;
