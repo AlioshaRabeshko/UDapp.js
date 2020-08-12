@@ -1,6 +1,12 @@
 'use strict';
 
-const { globalShortcut, app, BrowserWindow, shell } = require('electron');
+const {
+	globalShortcut,
+	app,
+	BrowserWindow,
+	shell,
+	remote,
+} = require('electron');
 const { ipcMain } = require('electron');
 const { Sequelize } = require('sequelize');
 const pizzip = require('pizzip');
@@ -10,7 +16,9 @@ const path = require('path');
 const isDev = require('electron-is-dev');
 
 const Patients = require('../models/patients');
+const Diagnostics = require('../models/diagnostics');
 const Forms = require('../models/forms');
+const Settings = require('../models/settings');
 
 let mainWindow;
 
@@ -20,6 +28,7 @@ function createWindow() {
 		height: 720,
 		webPreferences: {
 			nodeIntegration: true,
+			enableRemoteModule: true,
 		},
 		frame: false,
 	});
@@ -84,20 +93,39 @@ ipcMain.on('editPatient', async (e, arg) => {
 });
 
 ipcMain.on('createDocx', async (e, arg) => {
-	const content = fs.readFileSync(
-		path.resolve(__dirname, `tmp3.docx`),
-		'binary'
-	);
-	const zip = new pizzip(content);
+	const { data, id, patientId } = arg;
+	const { name, birthday } = (
+		await Patients.findOne({ where: { id: patientId } })
+	).dataValues;
+	const doctor = (await Settings.findOne({ where: { property: 'doctor' } }))
+		.dataValues;
+	const device = (await Settings.findOne({ where: { property: 'device' } }))
+		.dataValues;
+	const { docxName } = (await Forms.findOne({ where: { id } })).dataValues;
+	const template = fs.readFileSync(path.resolve(__dirname, docxName), 'binary');
+	const zip = new pizzip(template);
 	try {
 		const doc = new docx(zip);
-		doc.setData(arg);
+		const obj = {
+			...data,
+			name,
+			birthday,
+			date: new Date(),
+			doctor: doctor.value,
+			device: device.value,
+		};
+		Diagnostics.create({
+			patientId,
+			diagnosticId: id,
+			data: JSON.stringify(obj),
+		});
+		doc.setData(obj);
 		doc.render();
 		const buf = doc.getZip().generate({ type: 'nodebuffer' });
-		fs.writeFile(path.resolve(__dirname, 'output.docx'), buf, () => {
-			e.reply('createDocx-reply', { status: true, data: arg });
-			shell.openPath(path.join(__dirname, 'output.docx'));
-		});
+		const output = path.resolve(__dirname, 'output.docx');
+		const writeStream = fs.createWriteStream(output);
+		writeStream.write(buf);
+		shell.openPath(output);
 	} catch (error) {
 		console.log(error);
 	}
@@ -105,29 +133,114 @@ ipcMain.on('createDocx', async (e, arg) => {
 
 ipcMain.on('getDiagnostics', async (e, arg) => {
 	const strings = await Forms.findAll();
-	const forms = strings.map((el) => JSON.parse(el.dataValues.form));
+	const forms = strings.map((el) => ({
+		form: JSON.parse(el.dataValues.form),
+		id: el.dataValues.id,
+	}));
 	e.reply('getDiagnostics-reply', { data: forms });
 });
+
+ipcMain.on('getDiagnostic', async (e, arg) => {
+	const data = await Forms.findOne({ where: { id: arg.id } });
+	e.reply('getDiagnostic-reply', { data });
+});
+
+ipcMain.on('getPrevious', async (e, arg) => {
+	const res = await Diagnostics.findAll({ where: { patientId: arg.id } });
+	const newRes = [];
+	for (const val of res) {
+		const form = await Forms.findOne({
+			where: { id: val.dataValues.diagnosticId },
+		});
+		newRes.push({
+			name: form.dataValues.name,
+			id: val.dataValues.id,
+			createdAt: val.dataValues.createdAt,
+		});
+	}
+	e.reply('getPrevious-reply', { data: newRes });
+});
+
+ipcMain.on('deleteReport', async (e, arg) => {
+	const item = await Diagnostics.findOne({ where: { id: arg.id } });
+	item.destroy();
+});
+
 // const form = JSON.stringify({
-// 	name: 'Обстеження органів сечовидільної системи',
-// 	count: 28,
+// 	name: 'Обстеження органів черевної порожнини',
+// 	count: 29,
 // 	blocks: [
 // 		{
-// 			name: 'Ліва нирка',
+// 			name: 'Печінка',
+// 			inputs: [
+// 				{
+// 					type: 'input',
+// 					prelabel: 'Ліва доля:',
+// 					afterlabel: 'мм',
+// 				},
+// 				{
+// 					type: 'input',
+// 					prelabel: 'Права доля:',
+// 					afterlabel: 'мм',
+// 				},
+// 				{
+// 					type: 'radio',
+// 					prelabel: 'Контури:',
+// 					values: ['Чіткі', 'Нечіткі'],
+// 				},
+// 				{
+// 					type: 'radio',
+// 					prelabel: 'Контури:',
+// 					values: ['Рівні', 'Нерівні'],
+// 				},
+// 				{
+// 					type: 'radio',
+// 					prelabel: 'Краї:',
+// 					values: ['Типово', 'Нетипово'],
+// 				},
+// 				{
+// 					type: 'radio',
+// 					prelabel: 'Ехоструктура:',
+// 					values: ['Дрібнозерниста', 'Однорідна', 'Неоднорідна'],
+// 				},
+// 				{
+// 					type: 'radio',
+// 					prelabel: 'Ехогенність:',
+// 					values: ['Підвищена', 'Знижена', 'Без змін'],
+// 				},
+// 				{
+// 					type: 'input',
+// 					prelabel: 'Ворітка вежа:',
+// 					afterlabel: 'мм',
+// 				},
+// 				{
+// 					type: 'input',
+// 					prelabel: 'НПВ:',
+// 					afterlabel: 'мм',
+// 				},
+// 				{
+// 					type: 'input',
+// 					prelabel: 'Холедох:',
+// 					afterlabel: 'мм',
+// 				},
+// 			],
+// 		},
+// 		{
+// 			name: 'Жовчний міхур',
 // 			inputs: [
 // 				{
 // 					type: 'radio',
 // 					prelabel: 'Розміщена:',
-// 					values: ['Типово', 'Нетипово', 'Нефроптоз І', 'Нефроптоз ІІ'],
+// 					values: ['Визначається', 'Не визначається'],
 // 				},
 // 				{
-// 					type: 'inputxinput',
+// 					type: 'input',
 // 					prelabel: 'Розміри:',
 // 					afterlabel: 'мм',
 // 				},
 // 				{
 // 					type: 'input',
-// 					prelabel: 'Паренхіма:',
+// 					prelabel: 'Стінки:',
 // 					afterlabel: 'мм',
 // 				},
 // 				{
@@ -139,97 +252,50 @@ ipcMain.on('getDiagnostics', async (e, arg) => {
 // 					type: 'radio',
 // 					prelabel: 'Контури:',
 // 					values: ['Рівні', 'Нерівні'],
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Шари диференціюються:',
-// 					values: ['Чітко', 'Нечітко'],
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Співвідношення паренхіми до ЧМС:',
-// 					values: ['3:1', '2:1', '1:1'],
-// 				},
-// 				{
-// 					type: 'input',
-// 					prelabel:
-// 						'ЧМК ущільнений за рахунок дрібних ехопозитивних структур розміром до:',
-// 					afterlabel: 'мм',
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Конкременти:',
-// 					values: ['Виявлено', 'Невиявлено'],
 // 				},
 // 			],
 // 		},
 // 		{
-// 			name: 'Права нирка',
+// 			name: 'Підшлункова залоза',
 // 			inputs: [
 // 				{
 // 					type: 'radio',
-// 					prelabel: 'Розміщена:',
-// 					values: ['Типово', 'Нетипово', 'Нефроптоз І', 'Нефроптоз ІІ'],
+// 					prelabel: 'Візуалізація:',
+// 					values: ['Візуалізується', 'Не візуалізується'],
 // 				},
 // 				{
-// 					type: 'inputxinput',
-// 					prelabel: 'Розміри:',
+// 					type: 'radio',
+// 					prelabel: 'Візуалізація:',
+// 					values: ['Повністю', 'Неповністю'],
+// 				},
+// 				{
+// 					type: 'inputxinputxinput',
+// 					prelabel: 'Розміри',
 // 					afterlabel: 'мм',
+// 				},
+// 				{
+// 					type: 'radio',
+// 					prelabel: 'Структура:',
+// 					values: ['Однорідна', 'Неоднорідна'],
+// 				},
+// 				{
+// 					type: 'radio',
+// 					prelabel: 'Ехогенність:',
+// 					values: ['Підвищена', 'Знижена', 'Без змін'],
 // 				},
 // 				{
 // 					type: 'input',
-// 					prelabel: 'Паренхіма:',
+// 					prelabel: 'Панкреатична протока',
 // 					afterlabel: 'мм',
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Контури:',
-// 					values: ['Чіткі', 'Нечіткі'],
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Контури:',
-// 					values: ['Рівні', 'Нерівні'],
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Шари диференціюються:',
-// 					values: ['Чітко', 'Нечітко'],
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Співвідношення паренхіми до ЧМС:',
-// 					values: ['3:1', '2:1', '1:1'],
-// 				},
-// 				{
-// 					type: 'input',
-// 					prelabel:
-// 						'ЧМК ущільнений за рахунок дрібних ехопозитивних структур розміром до:',
-// 					afterlabel: 'мм',
-// 				},
-// 				{
-// 					type: 'radio',
-// 					prelabel: 'Конкременти:',
-// 					values: ['Виявлено', 'Невиявлено'],
 // 				},
 // 			],
 // 		},
-// 		,
 // 		{
-// 			name: 'Сечовий міхур',
+// 			name: 'Селезінка',
 // 			inputs: [
 // 				{
-// 					type: 'radio',
-// 					values: ['Виповнений', 'Невиповнений'],
-// 				},
-// 				{
 // 					type: 'input',
-// 					prelabel: 'V',
-// 					afterlabel: 'мм',
-// 				},
-// 				{
-// 					type: 'input',
-// 					prelabel: 'Vзал',
+// 					prelabel: 'Розміри',
 // 					afterlabel: 'мм',
 // 				},
 // 				{
@@ -244,25 +310,25 @@ ipcMain.on('getDiagnostics', async (e, arg) => {
 // 				},
 // 				{
 // 					type: 'radio',
-// 					prelabel: 'Вміст',
-// 					values: ['Однорідний', 'Неоднорідний'],
-// 				},
-// 				{
-// 					type: 'input',
-// 					prelabel: 'Стінки',
-// 					afterlabel: 'мм',
+// 					prelabel: 'Ехоструктура:',
+// 					values: ['Дрібнозерниста', 'Однорідна', 'Неоднорідна'],
 // 				},
 // 				{
 // 					type: 'radio',
-// 					prelabel: 'Сечоводи',
-// 					values: ['Нерозширені', 'Розширені  '],
+// 					prelabel: 'Ехогенність:',
+// 					values: ['Підвищена', 'Знижена', 'Без змін'],
+// 				},
+// 				{
+// 					type: 'input',
+// 					prelabel: 'Селезінкова вежа у воротах селезінки',
+// 					afterlabel: 'мм',
 // 				},
 // 			],
 // 		},
 // 	],
 // });
-// const tmp = await Forms.create({
+// Forms.create({
 // 	name: 'Обстеження органів сечовидільної системи',
 // 	form,
-// 	docxName: 'tmp3.docx',
+// 	docxName: 'tmp2.docx',
 // });

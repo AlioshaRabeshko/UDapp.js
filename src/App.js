@@ -8,6 +8,7 @@ import DataBase from './components/DataBase';
 import Reports from './components/Reports';
 import NewPatient from './components/NewPatient';
 import Edit from './components/Edit';
+import Previous from './components/Previous';
 import Diagnostic from './components/Diagnostic';
 import ChooseDiagnostic from './components/ChooseDiagnostic';
 
@@ -25,7 +26,11 @@ const App = () => {
 				/>
 				<Route path="/newpatient" component={NewPatient} />
 				<Route path="/edit/:id" component={Edit} />
-				<Route path="/diagnostic" component={Diagnostic} />
+				<Route path="/previous/:id" component={Previous} />
+				<Route
+					path="/diagnostic/:patientId/:diagnosticId"
+					component={Diagnostic}
+				/>
 				<Route path="/" component={Nav} />
 			</Switch>
 		</div>

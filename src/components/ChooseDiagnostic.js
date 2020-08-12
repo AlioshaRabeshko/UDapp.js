@@ -9,10 +9,9 @@ const ChooseDiagnostic = () => {
 	const { patientId } = useParams();
 	useEffect(() => {
 		ipcRenderer.send('getDiagnostics');
-		ipcRenderer.on('getDiagnostics-reply', (event, arg) => {
-			setDiagnostics(arg.data);
-			console.log(arg);
-		});
+		ipcRenderer.on('getDiagnostics-reply', (event, arg) =>
+			setDiagnostics(arg.data)
+		);
 		return () => ipcRenderer.removeAllListeners('getDiagnostics-reply');
 	}, []);
 	return (
@@ -42,7 +41,7 @@ const ChooseDiagnostic = () => {
 					{diagnostics.map((el, id) => (
 						<li key={id}>
 							<div className="diagnostic-p">
-								<p>{el.name}</p>
+								<p>{el.form.name}</p>
 							</div>
 							<div className="diagnostic-p">
 								<Link to={`/diagnostic/${patientId}/${el.id}`}>Продовжити</Link>
