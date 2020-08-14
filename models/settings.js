@@ -5,6 +5,7 @@ class Settings extends Model {}
 Settings.init(
 	{
 		property: DataTypes.STRING,
+		title: DataTypes.STRING,
 		value: DataTypes.TEXT,
 	},
 	{ sequelize, modelName: 'settings' }

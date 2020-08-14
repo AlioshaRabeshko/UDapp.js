@@ -30,7 +30,7 @@ function createWindow() {
 			nodeIntegration: true,
 			enableRemoteModule: true,
 		},
-		frame: false,
+		// frame: false,
 	});
 	// mainWindow.setMenu(null);
 	mainWindow.loadURL(
@@ -109,12 +109,12 @@ ipcMain.on('createDocx', async (e, arg) => {
 		const obj = {
 			...data,
 			name,
-			birthday,
-			date: new Date(),
+			birthday: birthday.toLocaleDateString(),
+			date: new Date().toLocaleDateString(),
 			doctor: doctor.value,
 			device: device.value,
 		};
-		Diagnostics.create({
+		const tmp = await Diagnostics.create({
 			patientId,
 			diagnosticId: id,
 			data: JSON.stringify(obj),
@@ -126,6 +126,7 @@ ipcMain.on('createDocx', async (e, arg) => {
 		const writeStream = fs.createWriteStream(output);
 		writeStream.write(buf);
 		shell.openPath(output);
+		e.reply('createDocx', { id: tmp.dataValues.id });
 	} catch (error) {
 		console.log(error);
 	}
@@ -164,6 +165,51 @@ ipcMain.on('getPrevious', async (e, arg) => {
 ipcMain.on('deleteReport', async (e, arg) => {
 	const item = await Diagnostics.findOne({ where: { id: arg.id } });
 	item.destroy();
+});
+
+ipcMain.on('getReport', async (e, arg) => {
+	const data = await Diagnostics.findOne({ where: { id: arg.id } });
+	const form = await Forms.findOne({
+		where: { id: data.dataValues.diagnosticId },
+	});
+	const patient = await Patients.findOne({
+		where: { id: data.dataValues.patientId },
+	});
+	e.reply('getReport-reply', {
+		data: data.dataValues.data,
+		form: form.dataValues,
+		patient: patient.dataValues,
+	});
+});
+
+ipcMain.on('genDocx', async (e, arg) => {
+	const data = await Diagnostics.findOne({ where: { id: arg.id } });
+	const form = await Forms.findOne({
+		where: { id: data.dataValues.diagnosticId },
+	});
+	const obj = JSON.parse(data.dataValues.data);
+	const template = fs.readFileSync(
+		path.resolve(__dirname, form.dataValues.docxName),
+		'binary'
+	);
+	const zip = new pizzip(template);
+	try {
+		const doc = new docx(zip);
+		doc.setData(obj);
+		doc.render();
+		const buf = doc.getZip().generate({ type: 'nodebuffer' });
+		const output = path.resolve(__dirname, 'output.docx');
+		const writeStream = fs.createWriteStream(output);
+		writeStream.write(buf);
+		shell.openPath(output);
+	} catch (error) {
+		console.log(error);
+	}
+});
+
+ipcMain.on('fetchSettings', async (e, arg) => {
+	const settings = await Settings.findAll();
+	e.reply('fetchSettings-reply', { settings });
 });
 
 // const form = JSON.stringify({

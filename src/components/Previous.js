@@ -72,6 +72,7 @@ const Previous = () => {
 							<div>
 								<p>{el.createdAt.toLocaleDateString()}</p>
 								<p
+									className="menu-item"
 									onClick={() => {
 										setPopup((popup) => !popup);
 										setDeleteId([el.id, id]);

@@ -10,9 +10,6 @@ const Nav = () => {
 			<Link as="a" to="/db">
 				<div className="card">База даних</div>
 			</Link>
-			<Link as="a" to="/reports">
-				<div className="card">Збережені заключення</div>
-			</Link>
 			<Link as="a" to="/settings">
 				<div className="card">Налаштування</div>
 			</Link>

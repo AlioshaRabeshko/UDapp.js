@@ -14,22 +14,26 @@ const Diagnostic = () => {
 	const handleSubmit = () => {
 		let count = 0;
 		for (let key in data) if (data[key] !== '') count++;
-		ipcRenderer.send('createDocx', { data, id: diagnosticId, patientId });
+		if (count >= form.count)
+			ipcRenderer.send('createDocx', { data, id: diagnosticId, patientId });
 	};
 	console.log(form.blocks);
+	const unblock = history.block('Ви впевнені що хочете покинути цю стрінку?');
 	useEffect(() => {
 		ipcRenderer.send('getDiagnostic', { id: diagnosticId });
 		ipcRenderer.on('getDiagnostic-reply', (event, arg) => {
 			setForm(JSON.parse(arg.data.dataValues.form));
 		});
 		ipcRenderer.on('createDocx-reply', (event, arg) => {
-			console.log('ok');
+			unblock();
+			history.push(`/viewprevious/${arg.id}`);
 		});
 		return () => {
+			unblock();
 			ipcRenderer.removeAllListeners('createDocx-reply');
 			ipcRenderer.removeAllListeners('getDiagnostic-reply');
 		};
-	}, []);
+	}, [diagnosticId, history, unblock]);
 	return (
 		<div>
 			<div className="nav-menu">
@@ -42,9 +46,10 @@ const Diagnostic = () => {
 							<div className="buttons">
 								<div onClick={() => close()}>Відминити</div>
 								<div
-									onClick={() =>
-										history.push(`/choosediagnostic/${patientId}`)
-									}>
+									onClick={() => {
+										unblock();
+										history.push(`/choosediagnostic/${patientId}`);
+									}}>
 									Перейти
 								</div>
 							</div>
@@ -62,7 +67,13 @@ const Diagnostic = () => {
 							</p>
 							<div className="buttons">
 								<div onClick={() => close()}>Відминити</div>
-								<div onClick={() => history.push('/')}>Перейти</div>
+								<div
+									onClick={() => {
+										unblock();
+										history.push('/');
+									}}>
+									Перейти
+								</div>
 							</div>
 						</div>
 					)}
@@ -140,13 +151,13 @@ const Diagnostic = () => {
 										<label>
 											<input
 												type="text"
-												name={`${id}_${id2}_1`}
+												name={`${id}_${id2}_0`}
 												onChange={handleFormChange}
 											/>
 											x
 											<input
 												type="text"
-												name={`${id}_${id2}_2`}
+												name={`${id}_${id2}_1`}
 												onChange={handleFormChange}
 											/>
 											{el.afterlabel ? ` ${el.afterlabel}` : ''}

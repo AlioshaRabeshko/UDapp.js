@@ -11,6 +11,7 @@ import Edit from './components/Edit';
 import Previous from './components/Previous';
 import Diagnostic from './components/Diagnostic';
 import ChooseDiagnostic from './components/ChooseDiagnostic';
+import ViewPrevious from './components/ViewPrevious';
 
 const App = () => {
 	return (
@@ -27,6 +28,7 @@ const App = () => {
 				<Route path="/newpatient" component={NewPatient} />
 				<Route path="/edit/:id" component={Edit} />
 				<Route path="/previous/:id" component={Previous} />
+				<Route path="/viewprevious/:id" component={ViewPrevious} />
 				<Route
 					path="/diagnostic/:patientId/:diagnosticId"
 					component={Diagnostic}
