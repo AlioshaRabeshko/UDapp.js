@@ -54,7 +54,8 @@ a:visited {
 a:hover,
 button:hover,
 .button:hover,
-.menu-item:hover {
+.menu-item:hover,
+.settings p {
 	color: rgb(197, 14, 14);
 	cursor: pointer;
 }
@@ -253,10 +254,17 @@ button:focus {
 	h2 {
 		text-align: center;
 	}
-	input {
+	input,
+	select {
+		width: 90%;
 		font-size: medium;
 		margin: 10px;
 		padding: 5px;
+	}
+	p {
+		text-align: center;
+		box-shadow: 0 0 5px black;
+		padding: 10px;
 	}
 }
 

@@ -6,6 +6,7 @@ const {
 	BrowserWindow,
 	shell,
 	remote,
+	ipcRenderer,
 } = require('electron');
 const { ipcMain } = require('electron');
 const { Sequelize } = require('sequelize');
@@ -15,30 +16,37 @@ const fs = require('fs');
 const path = require('path');
 const isDev = require('electron-is-dev');
 
-const Patients = require('../models/patients');
-const Diagnostics = require('../models/diagnostics');
-const Forms = require('../models/forms');
-const Settings = require('../models/settings');
+const Patients = require('./models/patients');
+const Diagnostics = require('./models/diagnostics');
+const Forms = require('./models/forms');
+const Settings = require('./models/settings');
+const { settings } = require('cluster');
 
 let mainWindow;
 
 function createWindow() {
-	mainWindow = new BrowserWindow({
-		width: 1280,
-		height: 720,
-		webPreferences: {
-			nodeIntegration: true,
-			enableRemoteModule: true,
-		},
-		// frame: false,
+	Settings.findAll({
+		where: { property: ['resolution', 'screen'] },
+	}).then((data) => {
+		mainWindow = new BrowserWindow({
+			width: +data[0].dataValues.value.split('x')[0],
+			height: +data[0].dataValues.value.split('x')[1],
+			webPreferences: {
+				nodeIntegration: true,
+				enableRemoteModule: true,
+			},
+			frame: data[1].dataValues.value !== 'borderless',
+			fullscreen: data[1].dataValues.value === 'fullscreen',
+		});
+		mainWindow.setMenu(null);
+		// console.log(`file://${path.join(__dirname, '../build/index.html')}`);
+		mainWindow.loadURL(
+			isDev
+				? 'http://localhost:3000'
+				: `file://${path.join(__dirname, '../build/index.html')}`
+		);
+		mainWindow.on('closed', () => (mainWindow = null));
 	});
-	// mainWindow.setMenu(null);
-	mainWindow.loadURL(
-		isDev
-			? 'http://localhost:3000'
-			: `file://${path.join(__dirname, '../build/index.html')}`
-	);
-	mainWindow.on('closed', () => (mainWindow = null));
 }
 
 app.on('ready', createWindow);
@@ -94,9 +102,8 @@ ipcMain.on('editPatient', async (e, arg) => {
 
 ipcMain.on('createDocx', async (e, arg) => {
 	const { data, id, patientId } = arg;
-	const { name, birthday } = (
-		await Patients.findOne({ where: { id: patientId } })
-	).dataValues;
+	const patient = (await Patients.findOne({ where: { id: patientId } }))
+		.dataValues;
 	const doctor = (await Settings.findOne({ where: { property: 'doctor' } }))
 		.dataValues;
 	const device = (await Settings.findOne({ where: { property: 'device' } }))
@@ -108,8 +115,8 @@ ipcMain.on('createDocx', async (e, arg) => {
 		const doc = new docx(zip);
 		const obj = {
 			...data,
-			name,
-			birthday: birthday.toLocaleDateString(),
+			name: patient.name,
+			birthday: patient.birthday.toLocaleDateString(),
 			date: new Date().toLocaleDateString(),
 			doctor: doctor.value,
 			device: device.value,
@@ -122,7 +129,7 @@ ipcMain.on('createDocx', async (e, arg) => {
 		doc.setData(obj);
 		doc.render();
 		const buf = doc.getZip().generate({ type: 'nodebuffer' });
-		const output = path.resolve(__dirname, 'output.docx');
+		const output = path.resolve('./output.docx');
 		const writeStream = fs.createWriteStream(output);
 		writeStream.write(buf);
 		shell.openPath(output);
@@ -183,22 +190,20 @@ ipcMain.on('getReport', async (e, arg) => {
 });
 
 ipcMain.on('genDocx', async (e, arg) => {
-	const data = await Diagnostics.findOne({ where: { id: arg.id } });
+	const objData = await Diagnostics.findOne({ where: { id: arg.id } });
 	const form = await Forms.findOne({
-		where: { id: data.dataValues.diagnosticId },
+		where: { id: objData.dataValues.diagnosticId },
 	});
-	const obj = JSON.parse(data.dataValues.data);
-	const template = fs.readFileSync(
-		path.resolve(__dirname, form.dataValues.docxName),
-		'binary'
-	);
+	const { data, docxName } = form.dataValues;
+	const obj = JSON.parse(objData.dataValues.data);
+	const template = fs.readFileSync(path.resolve(__dirname, docxName), 'binary');
 	const zip = new pizzip(template);
 	try {
 		const doc = new docx(zip);
 		doc.setData(obj);
 		doc.render();
 		const buf = doc.getZip().generate({ type: 'nodebuffer' });
-		const output = path.resolve(__dirname, 'output.docx');
+		const output = path.resolve('./output.docx');
 		const writeStream = fs.createWriteStream(output);
 		writeStream.write(buf);
 		shell.openPath(output);
@@ -212,6 +217,14 @@ ipcMain.on('fetchSettings', async (e, arg) => {
 	e.reply('fetchSettings-reply', { settings });
 });
 
+ipcMain.on('saveSettings', async (e, arg) => {
+	const { data } = arg;
+	for (let key in data) {
+		const setting = await Settings.findOne({ where: { property: key } });
+		setting.value = data[key];
+		setting.save();
+	}
+});
 // const form = JSON.stringify({
 // 	name: 'Обстеження органів черевної порожнини',
 // 	count: 29,

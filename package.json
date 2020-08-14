@@ -2,7 +2,9 @@
 	"name": "udapp",
 	"version": "0.1.0",
 	"private": true,
-	"main": "public/electron.js",
+	"main": "build/electron.js",
+	"author": "Aliosha Rabeshko",
+	"homepage": "./",
 	"dependencies": {
 		"@testing-library/jest-dom": "^4.2.4",
 		"@testing-library/react": "^9.5.0",
@@ -24,6 +26,10 @@
 		"build": "react-scripts build",
 		"test": "react-scripts test",
 		"eject": "react-scripts eject",
+		"postinstall": "electron-builder install-app-deps",
+		"pack": "electron-builder --dir",
+		"electron-pack": "build --em.main=build/electron.js",
+		"preelectron-pack": "npm build",
 		"start": "concurrently \"BROWSER=none npm run start2\" \"wait-on http://localhost:3000 && electron .\""
 	},
 	"eslintConfig": {
@@ -45,6 +51,18 @@
 		"concurrently": "^5.3.0",
 		"electron": "^9.2.0",
 		"electron-builder": "^22.8.0",
+		"electron-prebuilt": "^1.4.13",
 		"wait-on": "^5.1.0"
+	},
+	"build": {
+		"appId": "com.example.udapp",
+		"files": [
+			"build/**/*",
+			"node_modules/**/*",
+			"package.json"
+		],
+		"directories": {
+			"buildResources": "assets"
+		}
 	}
 }

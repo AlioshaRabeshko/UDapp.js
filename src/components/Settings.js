@@ -23,8 +23,8 @@ const Settings = () => {
 					{(close) => (
 						<div>
 							<p>
-								Ви впевнені що хочете перейти на головгу сторінку? Введені дані
-								будуть втрачені
+								Ви впевнені що хочете перейти на головгу сторінку? Незбережені
+								дані будуть втрачені
 							</p>
 							<div className="buttons">
 								<div onClick={() => close()}>Відминити</div>
@@ -52,29 +52,63 @@ const Settings = () => {
 			<div className="settings">
 				<h2>Налаштування</h2>
 				<table>
-					<tr>
-						<th />
-						<th />
-					</tr>
 					{settings.map((el, id) => (
 						<tr key={id}>
 							<th>{el.dataValues.title}:</th>
 							<th>
-								<input
-									type="text"
-									name={el.dataValues.property}
-									defaultValue={el.dataValues.value}
-									onChange={(e) =>
-										setNewSettings({
-											...newSettings,
-											[el.dataValues.property]: e.target.value,
-										})
-									}
-								/>
+								{el.dataValues.property !== 'resolution' ? (
+									el.dataValues.property === 'screen' ? (
+										<select
+											name={el.dataValues.property}
+											defaultValue={el.dataValues.value}
+											onChange={(e) =>
+												setNewSettings({
+													...newSettings,
+													[el.dataValues.property]: e.target.value,
+												})
+											}>
+											<option value="fullscreen">На весь екран</option>
+											<option value="window">Вікном</option>
+											<option value="borderless">Безрамковий</option>
+										</select>
+									) : (
+										<input
+											type="text"
+											name={el.dataValues.property}
+											defaultValue={el.dataValues.value}
+											onChange={(e) =>
+												setNewSettings({
+													...newSettings,
+													[el.dataValues.property]: e.target.value,
+												})
+											}
+										/>
+									)
+								) : (
+									<select
+										name={el.dataValues.property}
+										defaultValue={el.dataValues.value}
+										onChange={(e) =>
+											setNewSettings({
+												...newSettings,
+												[el.dataValues.property]: e.target.value,
+											})
+										}>
+										<option value="1280x720">1280x720</option>
+										<option value="1680x1050">1680x1050</option>
+										<option value="1920x1080">1920x1080</option>
+									</select>
+								)}
 							</th>
 						</tr>
 					))}
 				</table>
+				<p
+					onClick={() =>
+						ipcRenderer.send('saveSettings', { data: newSettings })
+					}>
+					Зберегти
+				</p>
 			</div>
 		</div>
 	);
