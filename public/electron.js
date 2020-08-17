@@ -1,229 +1,226 @@
-'use strict';
+"use strict";
 
 const {
-	globalShortcut,
-	app,
-	BrowserWindow,
-	shell,
-	remote,
-	ipcRenderer,
-} = require('electron');
-const { ipcMain } = require('electron');
-const { Sequelize } = require('sequelize');
-const pizzip = require('pizzip');
-const docx = require('docxtemplater');
-const fs = require('fs');
-const path = require('path');
-const isDev = require('electron-is-dev');
+  globalShortcut,
+  app,
+  BrowserWindow,
+  shell,
+  remote,
+  ipcRenderer,
+} = require("electron");
+if (require("electron-squirrel-startup")) return;
+const { ipcMain } = require("electron");
+const { Sequelize } = require("sequelize");
+const pizzip = require("pizzip");
+const docx = require("docxtemplater");
+const fs = require("fs");
+const path = require("path");
+const isDev = require("electron-is-dev");
 
-const Patients = require('./models/patients');
-const Diagnostics = require('./models/diagnostics');
-const Forms = require('./models/forms');
-const Settings = require('./models/settings');
-const { settings } = require('cluster');
+const Patients = require("./models/patients");
+const Diagnostics = require("./models/diagnostics");
+const Forms = require("./models/forms");
+const Settings = require("./models/settings");
+const { settings } = require("cluster");
 
 let mainWindow;
 
 function createWindow() {
-	Settings.findAll({
-		where: { property: ['resolution', 'screen'] },
-	}).then((data) => {
-		mainWindow = new BrowserWindow({
-			width: +data[0].dataValues.value.split('x')[0],
-			height: +data[0].dataValues.value.split('x')[1],
-			webPreferences: {
-				nodeIntegration: true,
-				enableRemoteModule: true,
-			},
-			frame: data[1].dataValues.value !== 'borderless',
-			fullscreen: data[1].dataValues.value === 'fullscreen',
-		});
-		mainWindow.setMenu(null);
-		// console.log(`file://${path.join(__dirname, '../build/index.html')}`);
-		mainWindow.loadURL(
-			isDev
-				? 'http://localhost:3000'
-				: `file://${path.join(__dirname, '../build/index.html')}`
-		);
-		mainWindow.on('closed', () => (mainWindow = null));
-	});
+  Settings.findAll({
+    where: { property: ["resolution", "screen"] },
+  }).then((data) => {
+    mainWindow = new BrowserWindow({
+      width: +data[0].dataValues.value.split("x")[0],
+      height: +data[0].dataValues.value.split("x")[1],
+      webPreferences: {
+        nodeIntegration: true,
+        enableRemoteModule: true,
+      },
+      frame: data[1].dataValues.value !== "borderless",
+      fullscreen: data[1].dataValues.value === "fullscreen",
+    });
+    mainWindow.setMenu(null);
+    // console.log(`file://${path.join(__dirname, '../build/index.html')}`);
+    mainWindow.loadURL(`file://${path.join(__dirname, "../build/index.html")}`);
+    mainWindow.on("closed", () => (mainWindow = null));
+  });
 }
 
-app.on('ready', createWindow);
+app.on("ready", createWindow);
 
-app.on('window-all-closed', () => {
-	if (process.platform !== 'darwin') {
-		app.quit();
-	}
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    app.quit();
+  }
 });
 
-app.on('activate', () => {
-	if (mainWindow === null) {
-		createWindow();
-	}
+app.on("activate", () => {
+  if (mainWindow === null) {
+    createWindow();
+  }
 });
 
-ipcMain.on('getPatients', async (e, arg) => {
-	const patients = await Patients.findAll();
-	const filtered = patients.filter(
-		(el) => el.name.toLowerCase().indexOf(arg.name.toLowerCase()) !== -1
-	);
-	if (filtered.length > 0) e.reply('getPatients-reply', { data: filtered });
-	else e.reply('getPatients-reply', { data: [] });
+ipcMain.on("getPatients", async (e, arg) => {
+  const patients = await Patients.findAll();
+  const filtered = patients.filter(
+    (el) => el.name.toLowerCase().indexOf(arg.name.toLowerCase()) !== -1
+  );
+  if (filtered.length > 0) e.reply("getPatients-reply", { data: filtered });
+  else e.reply("getPatients-reply", { data: [] });
 });
 
-ipcMain.on('getPatient', async (e, arg) => {
-	const patient = await Patients.findOne({ where: { id: arg.id } });
-	e.reply('getPatient-reply', { data: patient });
+ipcMain.on("getPatient", async (e, arg) => {
+  const patient = await Patients.findOne({ where: { id: arg.id } });
+  e.reply("getPatient-reply", { data: patient });
 });
 
-ipcMain.on('getSettle', async (e, arg) => {
-	const settlesDate = await Patients.findAll({
-		attributes: [[Sequelize.fn('DISTINCT', Sequelize.col('settle')), 'settle']],
-	});
-	const settles = settlesDate.map((el) => el.settle);
-	if (settles.length > 0) e.reply('getSettle-reply', { settles });
+ipcMain.on("getSettle", async (e, arg) => {
+  const settlesDate = await Patients.findAll({
+    attributes: [[Sequelize.fn("DISTINCT", Sequelize.col("settle")), "settle"]],
+  });
+  const settles = settlesDate.map((el) => el.settle);
+  if (settles.length > 0) e.reply("getSettle-reply", { settles });
 });
 
-ipcMain.on('addPatient', async (e, arg) => {
-	const patient = await Patients.create(arg);
-	if (patient) e.reply('addPatient-reply', { status: true });
+ipcMain.on("addPatient", async (e, arg) => {
+  const patient = await Patients.create(arg);
+  if (patient) e.reply("addPatient-reply", { status: true });
 });
 
-ipcMain.on('editPatient', async (e, arg) => {
-	const patient = await Patients.findOne({ where: { id: arg.id } });
-	patient.name = arg.name;
-	patient.birthday = arg.birthday;
-	patient.settle = arg.settle;
-	patient.sex = arg.sex;
-	patient.save();
-	e.reply('editPatient-reply', { status: true });
+ipcMain.on("editPatient", async (e, arg) => {
+  const patient = await Patients.findOne({ where: { id: arg.id } });
+  patient.name = arg.name;
+  patient.birthday = arg.birthday;
+  patient.settle = arg.settle;
+  patient.sex = arg.sex;
+  patient.save();
+  e.reply("editPatient-reply", { status: true });
 });
 
-ipcMain.on('createDocx', async (e, arg) => {
-	const { data, id, patientId } = arg;
-	const patient = (await Patients.findOne({ where: { id: patientId } }))
-		.dataValues;
-	const doctor = (await Settings.findOne({ where: { property: 'doctor' } }))
-		.dataValues;
-	const device = (await Settings.findOne({ where: { property: 'device' } }))
-		.dataValues;
-	const { docxName } = (await Forms.findOne({ where: { id } })).dataValues;
-	const template = fs.readFileSync(path.resolve(__dirname, docxName), 'binary');
-	const zip = new pizzip(template);
-	try {
-		const doc = new docx(zip);
-		const obj = {
-			...data,
-			name: patient.name,
-			birthday: patient.birthday.toLocaleDateString(),
-			date: new Date().toLocaleDateString(),
-			doctor: doctor.value,
-			device: device.value,
-		};
-		const tmp = await Diagnostics.create({
-			patientId,
-			diagnosticId: id,
-			data: JSON.stringify(obj),
-		});
-		doc.setData(obj);
-		doc.render();
-		const buf = doc.getZip().generate({ type: 'nodebuffer' });
-		const output = path.resolve('./output.docx');
-		const writeStream = fs.createWriteStream(output);
-		writeStream.write(buf);
-		shell.openPath(output);
-		e.reply('createDocx', { id: tmp.dataValues.id });
-	} catch (error) {
-		console.log(error);
-	}
+ipcMain.on("createDocx", async (e, arg) => {
+  const { data, id, patientId } = arg;
+  const patient = (await Patients.findOne({ where: { id: patientId } }))
+    .dataValues;
+  const doctor = (await Settings.findOne({ where: { property: "doctor" } }))
+    .dataValues;
+  const device = (await Settings.findOne({ where: { property: "device" } }))
+    .dataValues;
+  const { docxName } = (await Forms.findOne({ where: { id } })).dataValues;
+  const template = fs.readFileSync(path.resolve(__dirname, docxName), "binary");
+  const zip = new pizzip(template);
+  try {
+    const doc = new docx(zip);
+    const obj = {
+      ...data,
+      name: patient.name,
+      birthday: patient.birthday.toLocaleDateString(),
+      date: new Date().toLocaleDateString(),
+      doctor: doctor.value,
+      device: device.value,
+    };
+    const tmp = await Diagnostics.create({
+      patientId,
+      diagnosticId: id,
+      data: JSON.stringify(obj),
+    });
+    doc.setData(obj);
+    doc.render();
+    const buf = doc.getZip().generate({ type: "nodebuffer" });
+    const output = path.resolve("./output.docx");
+    const writeStream = fs.createWriteStream(output);
+    writeStream.write(buf);
+    shell.openPath(output);
+    e.reply("createDocx", { id: tmp.dataValues.id });
+  } catch (error) {
+    console.log(error);
+  }
 });
 
-ipcMain.on('getDiagnostics', async (e, arg) => {
-	const strings = await Forms.findAll();
-	const forms = strings.map((el) => ({
-		form: JSON.parse(el.dataValues.form),
-		id: el.dataValues.id,
-	}));
-	e.reply('getDiagnostics-reply', { data: forms });
+ipcMain.on("getDiagnostics", async (e, arg) => {
+  const strings = await Forms.findAll();
+  const forms = strings.map((el) => ({
+    form: JSON.parse(el.dataValues.form),
+    id: el.dataValues.id,
+  }));
+  e.reply("getDiagnostics-reply", { data: forms });
 });
 
-ipcMain.on('getDiagnostic', async (e, arg) => {
-	const data = await Forms.findOne({ where: { id: arg.id } });
-	e.reply('getDiagnostic-reply', { data });
+ipcMain.on("getDiagnostic", async (e, arg) => {
+  const data = await Forms.findOne({ where: { id: arg.id } });
+  e.reply("getDiagnostic-reply", { data });
 });
 
-ipcMain.on('getPrevious', async (e, arg) => {
-	const res = await Diagnostics.findAll({ where: { patientId: arg.id } });
-	const newRes = [];
-	for (const val of res) {
-		const form = await Forms.findOne({
-			where: { id: val.dataValues.diagnosticId },
-		});
-		newRes.push({
-			name: form.dataValues.name,
-			id: val.dataValues.id,
-			createdAt: val.dataValues.createdAt,
-		});
-	}
-	e.reply('getPrevious-reply', { data: newRes });
+ipcMain.on("getPrevious", async (e, arg) => {
+  const res = await Diagnostics.findAll({ where: { patientId: arg.id } });
+  const newRes = [];
+  for (const val of res) {
+    const form = await Forms.findOne({
+      where: { id: val.dataValues.diagnosticId },
+    });
+    newRes.push({
+      name: form.dataValues.name,
+      id: val.dataValues.id,
+      createdAt: val.dataValues.createdAt,
+    });
+  }
+  e.reply("getPrevious-reply", { data: newRes });
 });
 
-ipcMain.on('deleteReport', async (e, arg) => {
-	const item = await Diagnostics.findOne({ where: { id: arg.id } });
-	item.destroy();
+ipcMain.on("deleteReport", async (e, arg) => {
+  const item = await Diagnostics.findOne({ where: { id: arg.id } });
+  item.destroy();
 });
 
-ipcMain.on('getReport', async (e, arg) => {
-	const data = await Diagnostics.findOne({ where: { id: arg.id } });
-	const form = await Forms.findOne({
-		where: { id: data.dataValues.diagnosticId },
-	});
-	const patient = await Patients.findOne({
-		where: { id: data.dataValues.patientId },
-	});
-	e.reply('getReport-reply', {
-		data: data.dataValues.data,
-		form: form.dataValues,
-		patient: patient.dataValues,
-	});
+ipcMain.on("getReport", async (e, arg) => {
+  const data = await Diagnostics.findOne({ where: { id: arg.id } });
+  const form = await Forms.findOne({
+    where: { id: data.dataValues.diagnosticId },
+  });
+  const patient = await Patients.findOne({
+    where: { id: data.dataValues.patientId },
+  });
+  e.reply("getReport-reply", {
+    data: data.dataValues.data,
+    form: form.dataValues,
+    patient: patient.dataValues,
+  });
 });
 
-ipcMain.on('genDocx', async (e, arg) => {
-	const objData = await Diagnostics.findOne({ where: { id: arg.id } });
-	const form = await Forms.findOne({
-		where: { id: objData.dataValues.diagnosticId },
-	});
-	const { data, docxName } = form.dataValues;
-	const obj = JSON.parse(objData.dataValues.data);
-	const template = fs.readFileSync(path.resolve(__dirname, docxName), 'binary');
-	const zip = new pizzip(template);
-	try {
-		const doc = new docx(zip);
-		doc.setData(obj);
-		doc.render();
-		const buf = doc.getZip().generate({ type: 'nodebuffer' });
-		const output = path.resolve('./output.docx');
-		const writeStream = fs.createWriteStream(output);
-		writeStream.write(buf);
-		shell.openPath(output);
-	} catch (error) {
-		console.log(error);
-	}
+ipcMain.on("genDocx", async (e, arg) => {
+  const objData = await Diagnostics.findOne({ where: { id: arg.id } });
+  const form = await Forms.findOne({
+    where: { id: objData.dataValues.diagnosticId },
+  });
+  const { data, docxName } = form.dataValues;
+  const obj = JSON.parse(objData.dataValues.data);
+  const template = fs.readFileSync(path.resolve(__dirname, docxName), "binary");
+  const zip = new pizzip(template);
+  try {
+    const doc = new docx(zip);
+    doc.setData(obj);
+    doc.render();
+    const buf = doc.getZip().generate({ type: "nodebuffer" });
+    const output = path.resolve("./output.docx");
+    const writeStream = fs.createWriteStream(output);
+    writeStream.write(buf);
+    shell.openPath(output);
+  } catch (error) {
+    console.log(error);
+  }
 });
 
-ipcMain.on('fetchSettings', async (e, arg) => {
-	const settings = await Settings.findAll();
-	e.reply('fetchSettings-reply', { settings });
+ipcMain.on("fetchSettings", async (e, arg) => {
+  const settings = await Settings.findAll();
+  e.reply("fetchSettings-reply", { settings });
 });
 
-ipcMain.on('saveSettings', async (e, arg) => {
-	const { data } = arg;
-	for (let key in data) {
-		const setting = await Settings.findOne({ where: { property: key } });
-		setting.value = data[key];
-		setting.save();
-	}
+ipcMain.on("saveSettings", async (e, arg) => {
+  const { data } = arg;
+  for (let key in data) {
+    const setting = await Settings.findOne({ where: { property: key } });
+    setting.value = data[key];
+    setting.save();
+  }
 });
 // const form = JSON.stringify({
 // 	name: 'Обстеження органів черевної порожнини',
