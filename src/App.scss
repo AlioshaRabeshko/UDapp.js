@@ -93,6 +93,12 @@ button:focus {
 				justify-content: space-between;
 			}
 		}
+		li:hover {
+			background-color: #eee;
+		}
+		li.selected {
+			background-color: #ccf;
+		}
 	}
 }
 

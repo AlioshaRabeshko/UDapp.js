@@ -2,7 +2,6 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import './App.scss';
 import ChoosePatient from './components/ChoosePatient';
-import Nav from './components/Nav';
 import Settings from './components/Settings';
 import DataBase from './components/DataBase';
 import Reports from './components/Reports';
@@ -17,7 +16,6 @@ const App = () => {
 	return (
 		<div className="App">
 			<Switch>
-				<Route path="/choosepatient" component={ChoosePatient} />
 				<Route path="/db" component={DataBase} />
 				<Route path="/reports" component={Reports} />
 				<Route path="/settings" component={Settings} />
@@ -33,7 +31,7 @@ const App = () => {
 					path="/diagnostic/:patientId/:diagnosticId"
 					component={Diagnostic}
 				/>
-				<Route path="/" component={Nav} />
+				<Route path="/" component={ChoosePatient} />
 			</Switch>
 		</div>
 	);

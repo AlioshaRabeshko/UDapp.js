@@ -23,22 +23,7 @@ const Diagnostic = () => {
 	return (
 		<div>
 			<div className="nav-menu">
-				<Popup
-					trigger={<div className="menu-item">Повернутися на головну</div>}
-					modal>
-					{(close) => (
-						<div>
-							<p>
-								Ви впевнені що хочете перейти на головгу сторінку? Введені дані
-								будуть втрачені
-							</p>
-							<div className="buttons">
-								<div onClick={() => close()}>Відминити</div>
-								<div onClick={() => history.push('/')}>Перейти</div>
-							</div>
-						</div>
-					)}
-				</Popup>
+				<div onClick={() => history.push('/')}>Повернутися на головну</div>
 				<Popup
 					trigger={<div className="menu-item">Вийти з програми</div>}
 					modal>
@@ -107,7 +92,7 @@ const Diagnostic = () => {
 				<div
 					className="button"
 					onClick={() => ipcRenderer.send('genDocx', { id })}>
-					Згенерувати Word документ
+					Згенерувати документ
 				</div>
 			</div>
 		</div>

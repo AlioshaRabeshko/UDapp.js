@@ -7,6 +7,15 @@ const ChooseDiagnostic = () => {
 	const [diagnostics, setDiagnostics] = useState([]);
 	const history = useHistory();
 	const { patientId } = useParams();
+	const handleKey = (e) => {
+		// console.log(e.keyCode);
+		// console.log(e.altKey, e.keyCode);
+		if (e.altKey && e.keyCode === 37) return history.goBack();
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleKey);
+		return () => window.removeEventListener('keydown', handleKey);
+	}, [handleKey]);
 	useEffect(() => {
 		ipcRenderer.send('getDiagnostics');
 		ipcRenderer.on('getDiagnostics-reply', (event, arg) =>

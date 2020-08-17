@@ -9,14 +9,21 @@ const NewPatient = () => {
 	const [settles, setSettles] = useState([]);
 	const [sex, setSex] = useState(true);
 	const history = useHistory();
+	const handleKey = (e) => {
+		if (e.altKey && e.keyCode === 37) return history.goBack();
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleKey);
+		return () => window.removeEventListener('keydown', handleKey);
+	}, [handleKey]);
 	useEffect(() => {
 		ipcRenderer.send('getSettle');
 		ipcRenderer.on('getSettle-reply', (event, arg) => {
 			setSettles(arg.settles);
 		});
-		ipcRenderer.on('addPatient-reply', (event, arg) => {
-			if (arg.status) history.push('/diagnostic');
-		});
+		ipcRenderer.on('addPatient-reply', (event, arg) =>
+			history.push(`/choosediagnostic/${arg.id}`)
+		);
 		return () => {
 			ipcRenderer.removeAllListeners('getSettle-reply');
 			ipcRenderer.removeAllListeners('addPatient-reply');

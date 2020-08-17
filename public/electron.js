@@ -1,14 +1,7 @@
 'use strict';
 
-const {
-	globalShortcut,
-	app,
-	BrowserWindow,
-	shell,
-	remote,
-	ipcRenderer,
-} = require('electron');
-if (require('electron-squirrel-startup')) return;
+const { app, BrowserWindow, shell } = require('electron');
+// if (require('electron-squirrel-startup')) return;
 const { ipcMain } = require('electron');
 const { Sequelize } = require('sequelize');
 const pizzip = require('pizzip');
@@ -21,11 +14,10 @@ const Patients = require('./models/patients');
 const Diagnostics = require('./models/diagnostics');
 const Forms = require('./models/forms');
 const Settings = require('./models/settings');
-const { settings } = require('cluster');
 
 let mainWindow;
 
-function createWindow() {
+const createWindow = () => {
 	Settings.findAll({
 		where: { property: ['resolution', 'screen'] },
 	}).then((data) => {
@@ -39,11 +31,15 @@ function createWindow() {
 			frame: data[1].dataValues.value !== 'borderless',
 			fullscreen: data[1].dataValues.value === 'fullscreen',
 		});
-		mainWindow.setMenu(null);
-		mainWindow.loadURL(`file://${path.join(__dirname, '../build/index.html')}`);
+		// mainWindow.setMenu(null);
+		mainWindow.loadURL(
+			isDev
+				? 'http://localhost:3000'
+				: `file://${path.join(__dirname, '../build/index.html')}`
+		);
 		mainWindow.on('closed', () => (mainWindow = null));
 	});
-}
+};
 
 app.on('ready', async () => {
 	if (!fs.existsSync('installed.txt')) {
@@ -133,8 +129,12 @@ ipcMain.on('getSettle', async (e, arg) => {
 });
 
 ipcMain.on('addPatient', async (e, arg) => {
-	const patient = await Patients.create(arg);
-	if (patient) e.reply('addPatient-reply', { status: true });
+	try {
+		const patient = await Patients.create(arg);
+		e.reply('addPatient-reply', { id: patient.dataValues.id });
+	} catch (err) {
+		console.log(err);
+	}
 });
 
 ipcMain.on('editPatient', async (e, arg) => {
