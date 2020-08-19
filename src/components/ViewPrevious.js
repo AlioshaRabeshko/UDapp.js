@@ -6,10 +6,18 @@ const { ipcRenderer, remote } = window.require('electron');
 const Diagnostic = () => {
 	const [form, setForm] = useState({ name: '', blocks: [], count: 0 });
 	const [data, setData] = useState({});
-	console.log('data: ', data);
 	const [patient, setPatient] = useState({});
 	const { id } = useParams();
 	const history = useHistory();
+	const handleKey = (e) => {
+		if (e.altKey && e.keyCode === 37) return history.goBack();
+		if (e.keyCode === 13) return ipcRenderer.send('genDocx', { id });
+		if (e.keyCode === 112) return history.push('/help');
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleKey);
+		return () => window.removeEventListener('keydown', handleKey);
+	}, [handleKey]);
 	useEffect(() => {
 		ipcRenderer.send('getReport', { id });
 		ipcRenderer.on('getReport-reply', (event, arg) => {
@@ -93,6 +101,18 @@ const Diagnostic = () => {
 					className="button"
 					onClick={() => ipcRenderer.send('genDocx', { id })}>
 					Згенерувати документ
+				</div>
+			</div>
+			<div className="func-keys">
+				<div>
+					<strong>F1</strong> - Допомога
+				</div>
+				<div>
+					<strong>Alt &#60;</strong> - Повернутися назад
+				</div>
+
+				<div>
+					<strong>Enter</strong> - Згенерувати документ
 				</div>
 			</div>
 		</div>

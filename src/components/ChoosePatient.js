@@ -6,12 +6,14 @@ const { ipcRenderer, remote } = window.require('electron');
 const ChoosePatient = () => {
 	const [patients, setPatients] = useState([]);
 	const [selected, setSelected] = useState(-1);
+	const [deletePatient, setDeletePatient] = useState(false);
 	const history = useHistory();
 	const handleKey = (e) => {
+		if (deletePatient) return;
 		// console.log(e.keyCode);
 		if (e.keyCode === 38 && selected > 0) return setSelected(selected - 1);
 		if (e.keyCode === 34) return setSelected(patients.length);
-		if (e.keyCode === 33) return setSelected(-1);
+		if (e.keyCode === 33) return setSelected(0);
 		if (e.keyCode === 40 && selected < patients.length)
 			return setSelected(selected + 1);
 		if (e.keyCode === 13 && selected < patients.length)
@@ -20,8 +22,15 @@ const ChoosePatient = () => {
 			);
 		if (e.keyCode === 13 && selected === patients.length)
 			return history.push('/newpatient');
-
 		if (e.altKey && e.keyCode === 39) return history.goForward();
+		if (e.keyCode === 46 && selected < patients.length && selected !== -1)
+			return setDeletePatient(true);
+		if (e.keyCode === 112) return history.push('/help');
+		if (e.keyCode === 113 && selected < patients.length && selected !== -1)
+			return history.push(`/edit/${patients[selected].dataValues.id}`);
+		if (e.keyCode === 114 && selected < patients.length && selected !== -1)
+			return history.push(`/previous/${patients[selected].dataValues.id}`);
+		console.log(`${e.key}: ${e.keyCode}`);
 	};
 	useEffect(() => {
 		window.addEventListener('keydown', handleKey);
@@ -43,6 +52,20 @@ const ChoosePatient = () => {
 				<div className="menu-item" onClick={() => history.push('/settings')}>
 					Налаштування
 				</div>
+				<Popup
+					open={deletePatient}
+					onClose={() => setDeletePatient(false)}
+					modal>
+					<div>
+						<p className="popup">
+							Ви впевнені що хочете видалити пацієнта за бази даних?
+						</p>
+						<div className="buttons">
+							<div onClick={() => setDeletePatient(false)}>Відминити</div>
+							<div onClick={() => remote.getCurrentWindow().close()}>Вийти</div>
+						</div>
+					</div>
+				</Popup>
 				<Popup
 					trigger={<div className="menu-item">Вийти з програми</div>}
 					modal>
@@ -98,6 +121,26 @@ const ChoosePatient = () => {
 						</li>
 					</Link>
 				</ul>
+			</div>
+			<div className="func-keys">
+				<div>
+					<strong>F1</strong> - Допомога
+				</div>
+				<div>
+					<strong>F2</strong> - Редагувати
+				</div>
+				<div>
+					<strong>Delete</strong> - Видалити
+				</div>
+				<div>
+					<strong>F3</strong> - Попередні відвідування
+				</div>
+				<div>
+					<strong>&#8743;/&#8744;/PgUp/PgDn</strong> - Вверх/вниз
+				</div>
+				<div>
+					<strong>Enter</strong> - Продовжити
+				</div>
 			</div>
 		</div>
 	);

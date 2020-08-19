@@ -180,7 +180,7 @@ ipcMain.on('createDocx', async (e, arg) => {
 		const writeStream = fs.createWriteStream(output);
 		writeStream.write(buf);
 		shell.openPath(output);
-		e.reply('createDocx', { id: tmp.dataValues.id });
+		e.reply('createDocx-reply', { id: tmp.dataValues.id });
 	} catch (error) {
 		console.log(error);
 	}

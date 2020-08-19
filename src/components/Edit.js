@@ -10,6 +10,13 @@ const NewPatient = () => {
 	const [sex, setSex] = useState();
 	const { id } = useParams();
 	const history = useHistory();
+	const handleKey = (e) => {
+		if (e.altKey && e.keyCode === 37) return history.goBack();
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleKey);
+		return () => window.removeEventListener('keydown', handleKey);
+	}, [handleKey]);
 	useEffect(() => {
 		ipcRenderer.send('getSettle');
 		ipcRenderer.on('getSettle-reply', (event, arg) => {

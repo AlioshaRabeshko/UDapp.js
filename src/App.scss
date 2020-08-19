@@ -140,7 +140,7 @@ button:focus {
 .diagnostic {
 	display: flex;
 	flex-flow: wrap row;
-	// margin-bottom: 10%;
+	margin-bottom: 30px;
 	margin-top: 30px;
 	h1 {
 		width: 100%;
@@ -188,9 +188,16 @@ button:focus {
 			}
 		}
 	}
-	input[type='text'] {
+	input[type='number'] {
 		width: 80px;
 		font-size: medium;
+	}
+	input[type='number']:focus {
+		outline: auto;
+		outline-color: red;
+	}
+	input[type='radio']:focus {
+		outline: 2px solid red;
 	}
 	.button {
 		height: 30px;
@@ -212,6 +219,22 @@ button:focus {
 			'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
 			'Helvetica Neue', sans-serif;
 		min-height: 60px;
+	}
+}
+
+.func-keys {
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	background-color: rgb(245, 245, 248);
+	box-shadow: 0 0 5px black;
+	width: 100%;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: flex-start;
+	padding: 5px 20px;
+	div {
+		margin: 0 30px;
 	}
 }
 
@@ -276,4 +299,8 @@ button:focus {
 
 ul {
 	list-style-type: none;
+}
+
+.popup {
+	text-align: center;
 }

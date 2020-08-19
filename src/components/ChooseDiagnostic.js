@@ -5,12 +5,22 @@ const { ipcRenderer, remote } = window.require('electron');
 
 const ChooseDiagnostic = () => {
 	const [diagnostics, setDiagnostics] = useState([]);
+	const [selected, setSelected] = useState(-1);
 	const history = useHistory();
 	const { patientId } = useParams();
 	const handleKey = (e) => {
-		// console.log(e.keyCode);
-		// console.log(e.altKey, e.keyCode);
 		if (e.altKey && e.keyCode === 37) return history.goBack();
+		if (e.altKey && e.keyCode === 39) return history.goForward();
+		if (e.keyCode === 33) return setSelected(0);
+		if (e.keyCode === 34) return setSelected(diagnostics.length - 1);
+		if (e.keyCode === 38 && selected > 0) return setSelected(selected - 1);
+		if (e.keyCode === 40 && selected < diagnostics.length - 1)
+			return setSelected(selected + 1);
+		if (e.keyCode === 13)
+			return history.push(
+				`/diagnostic/${patientId}/${diagnostics[selected].id}`
+			);
+		if (e.keyCode === 112) return history.push('/help');
 	};
 	useEffect(() => {
 		window.addEventListener('keydown', handleKey);
@@ -48,7 +58,7 @@ const ChooseDiagnostic = () => {
 			<div className="patients-list">
 				<ul>
 					{diagnostics.map((el, id) => (
-						<li key={id}>
+						<li key={id} className={id === selected ? 'selected' : null}>
 							<div className="diagnostic-p">
 								<p>{el.form.name}</p>
 							</div>
@@ -58,6 +68,17 @@ const ChooseDiagnostic = () => {
 						</li>
 					))}
 				</ul>
+			</div>
+			<div className="func-keys">
+				<div>
+					<strong>F1</strong> - Допомога
+				</div>
+				<div>
+					<strong>&#8743;/&#8744;/PgUp/PgDn</strong> - Вверх/вниз
+				</div>
+				<div>
+					<strong>Enter</strong> - Продовжити
+				</div>
 			</div>
 		</div>
 	);

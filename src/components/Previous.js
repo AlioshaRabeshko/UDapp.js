@@ -4,11 +4,28 @@ import Popup from 'reactjs-popup';
 const { ipcRenderer, remote } = window.require('electron');
 
 const Previous = () => {
-	const history = useHistory();
 	const [popup, setPopup] = useState(false);
 	const [deleteId, setDeleteId] = useState([0, 0]);
-	const { id } = useParams();
+	const [selected, setSelected] = useState(-1);
 	const [previous, setPrevious] = useState([]);
+	const { id } = useParams();
+	const history = useHistory();
+	const handleKey = (e) => {
+		if (e.altKey && e.keyCode === 37) return history.goBack();
+		if (e.altKey && e.keyCode === 39) return history.goForward();
+		if (e.keyCode === 33) return setSelected(0);
+		if (e.keyCode === 34) return setSelected(previous.length - 1);
+		if (e.keyCode === 38 && selected > 0) return setSelected(selected - 1);
+		if (e.keyCode === 40 && selected < previous.length - 1)
+			return setSelected(selected + 1);
+		if (e.keyCode === 13)
+			return history.push(`/viewprevious/${previous[selected].id}`);
+		if (e.keyCode === 112) return history.push('/help');
+	};
+	useEffect(() => {
+		window.addEventListener('keydown', handleKey);
+		return () => window.removeEventListener('keydown', handleKey);
+	}, [handleKey]);
 	useEffect(() => {
 		ipcRenderer.send('getPrevious', { id });
 		ipcRenderer.on('getPrevious-reply', (event, arg) => {
@@ -65,7 +82,7 @@ const Previous = () => {
 				<ul>
 					{console.log(previous)}
 					{previous.map((el, id) => (
-						<li key={id}>
+						<li key={id} className={id === selected ? 'selected' : null}>
 							<div>
 								<p>{el.name}</p>
 							</div>
@@ -84,6 +101,27 @@ const Previous = () => {
 						</li>
 					))}
 				</ul>
+			</div>
+
+			<div className="func-keys">
+				<div>
+					<strong>F1</strong> - Допомога
+				</div>
+				<div>
+					<strong>Delete</strong> - Видалити
+				</div>
+				<div>
+					<strong>&#8743;/&#8744;/PgUp/PgDn</strong> - Вверх/вниз
+				</div>
+				<div>
+					<strong>Enter</strong> - Переглянути
+				</div>
+				<div>
+					<strong>Alt &#60;</strong> - Повернутися назад
+				</div>
+				<div>
+					<strong>Alt &#62;</strong> - Повернутися вперед
+				</div>
 			</div>
 		</div>
 	);
