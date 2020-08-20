@@ -272,6 +272,10 @@ ipcMain.on('saveSettings', async (e, arg) => {
 		setting.save();
 	}
 });
+ipcMain.on('deletePatient', async (e, arg) => {
+	const patient = await Patients.findOne({ where: { id: arg.id } });
+	patient.destroy();
+});
 // const form = JSON.stringify({
 // 	name: 'Обстеження органів черевної порожнини',
 // 	count: 29,

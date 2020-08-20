@@ -12,6 +12,7 @@ const Diagnostic = () => {
 	const handleKey = (e) => {
 		if (e.altKey && e.keyCode === 37) return history.goBack();
 		if (e.keyCode === 13) return ipcRenderer.send('genDocx', { id });
+		if (e.keyCode === 36) return history.push('/');
 		if (e.keyCode === 112) return history.push('/help');
 	};
 	useEffect(() => {
@@ -110,9 +111,11 @@ const Diagnostic = () => {
 				<div>
 					<strong>Alt &#60;</strong> - Повернутися назад
 				</div>
-
 				<div>
 					<strong>Enter</strong> - Згенерувати документ
+				</div>
+				<div>
+					<strong>Home</strong> - Повернутися на головну
 				</div>
 			</div>
 		</div>

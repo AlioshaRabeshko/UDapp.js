@@ -11,6 +11,7 @@ const NewPatient = () => {
 	const history = useHistory();
 	const handleKey = (e) => {
 		if (e.altKey && e.keyCode === 37) return history.push('/');
+		if (e.keyCode === 36) return history.push('/');
 		if (e.keyCode === 13) return newPatient();
 	};
 	useEffect(() => {
@@ -61,6 +62,7 @@ const NewPatient = () => {
 				<input
 					type="text"
 					list="settlement"
+					className="settlement"
 					placeholder="Місце проживання"
 					onChange={(e) => setSettle(e.target.value)}
 				/>
@@ -95,6 +97,9 @@ const NewPatient = () => {
 				</div>
 				<div>
 					<strong>Enter</strong> - Продовжити
+				</div>
+				<div>
+					<strong>Home</strong> - Повернутися на головну
 				</div>
 			</div>
 		</div>

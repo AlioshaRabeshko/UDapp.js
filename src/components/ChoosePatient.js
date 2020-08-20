@@ -16,6 +16,7 @@ const ChoosePatient = () => {
 		if (e.keyCode === 33) return setSelected(0);
 		if (e.keyCode === 40 && selected < patients.length)
 			return setSelected(selected + 1);
+		if (e.keyCode === 36) return history.push('/');
 		if (e.keyCode === 13 && selected < patients.length)
 			return history.push(
 				`/choosediagnostic/${patients[selected].dataValues.id}`
@@ -62,7 +63,22 @@ const ChoosePatient = () => {
 						</p>
 						<div className="buttons">
 							<div onClick={() => setDeletePatient(false)}>Відминити</div>
-							<div onClick={() => remote.getCurrentWindow().close()}>Вийти</div>
+							<div
+								onClick={() => {
+									// remote.getCurrentWindow().close()}
+									// ipcRenderer.send('deleteReport', { id: deleteId[0] });
+									ipcRenderer.send('deletePatient', {
+										id: patients[selected].dataValues.id,
+									});
+									setPatients((patients) => {
+										const tmp = patients.splice(0);
+										tmp.splice(selected, 1);
+										return tmp;
+									});
+									setDeletePatient(false);
+								}}>
+								Видалити
+							</div>
 						</div>
 					</div>
 				</Popup>
@@ -104,7 +120,14 @@ const ChoosePatient = () => {
 							</div>
 							<div>
 								<Link to={`/edit/${el.dataValues.id}`}>Редагувати</Link>
-								<p>Видалити</p>
+								<p
+									className="remove-btn"
+									onClick={() => {
+										setDeletePatient(true);
+										setSelected(id);
+									}}>
+									Видалити
+								</p>
 								<Link to={`/choosediagnostic/${el.dataValues.id}`}>
 									Продовжити
 								</Link>
@@ -130,10 +153,10 @@ const ChoosePatient = () => {
 					<strong>F2</strong> - Редагувати
 				</div>
 				<div>
-					<strong>Delete</strong> - Видалити
+					<strong>F3</strong> - Попередні відвідування
 				</div>
 				<div>
-					<strong>F3</strong> - Попередні відвідування
+					<strong>Delete</strong> - Видалити
 				</div>
 				<div>
 					<strong>&#8743;/&#8744;/PgUp/PgDn</strong> - Вверх/вниз

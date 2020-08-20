@@ -16,6 +16,7 @@ const ChooseDiagnostic = () => {
 		if (e.keyCode === 38 && selected > 0) return setSelected(selected - 1);
 		if (e.keyCode === 40 && selected < diagnostics.length - 1)
 			return setSelected(selected + 1);
+		if (e.keyCode === 36) return history.push('/');
 		if (e.keyCode === 13)
 			return history.push(
 				`/diagnostic/${patientId}/${diagnostics[selected].id}`
@@ -78,6 +79,9 @@ const ChooseDiagnostic = () => {
 				</div>
 				<div>
 					<strong>Enter</strong> - Продовжити
+				</div>
+				<div>
+					<strong>Home</strong> - Повернутися на головну
 				</div>
 			</div>
 		</div>

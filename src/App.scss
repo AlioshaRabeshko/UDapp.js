@@ -55,7 +55,8 @@ a:hover,
 button:hover,
 .button:hover,
 .menu-item:hover,
-.settings p {
+.settings p,
+.remove-btn:hover {
 	color: rgb(197, 14, 14);
 	cursor: pointer;
 }
@@ -117,7 +118,7 @@ button:focus {
 	}
 	.date {
 		display: flex;
-		input[type='text'],
+		input[type='number'],
 		input[type='date'] {
 			width: 50%;
 		}
@@ -134,6 +135,12 @@ button:focus {
 		height: 5vh;
 		font-size: large;
 		border: none;
+	}
+	.settlement {
+		width: 74%;
+	}
+	.radio {
+		width: 25%;
 	}
 }
 

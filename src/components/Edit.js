@@ -12,6 +12,8 @@ const NewPatient = () => {
 	const history = useHistory();
 	const handleKey = (e) => {
 		if (e.altKey && e.keyCode === 37) return history.goBack();
+		if (e.keyCode === 36) return history.push('/');
+		if (e.keyCode === 13) return newPatient();
 	};
 	useEffect(() => {
 		window.addEventListener('keydown', handleKey);
@@ -33,7 +35,7 @@ const NewPatient = () => {
 			setSex(arg.data.dataValues.sex);
 		});
 		ipcRenderer.on('editPatient-reply', (event, arg) => {
-			if (arg.status) history.goBack();
+			if (arg.status) history.push('/');
 		});
 		return () => {
 			ipcRenderer.removeAllListeners('editPatient-reply');
@@ -75,6 +77,7 @@ const NewPatient = () => {
 				<input
 					type="text"
 					list="settlement"
+					className="settlement"
 					value={settle}
 					onChange={(e) => setSettle(e.target.value)}
 				/>
@@ -105,6 +108,20 @@ const NewPatient = () => {
 				</div>
 			</div>
 			<button onClick={newPatient}>Зберегти</button>
+			<div className="func-keys">
+				<div>
+					<strong>F1</strong> - Допомога
+				</div>
+				<div>
+					<strong>Alt &#60;</strong> - Повернутися назад
+				</div>
+				<div>
+					<strong>Enter</strong> - Зберегти
+				</div>
+				<div>
+					<strong>Home</strong> - Повернутися на головну
+				</div>
+			</div>
 		</div>
 	);
 };

@@ -18,7 +18,8 @@ const Previous = () => {
 		if (e.keyCode === 38 && selected > 0) return setSelected(selected - 1);
 		if (e.keyCode === 40 && selected < previous.length - 1)
 			return setSelected(selected + 1);
-		if (e.keyCode === 13)
+		if (e.keyCode === 36) return history.push('/');
+		if (e.keyCode === 13 || e.keyCode === 114)
 			return history.push(`/viewprevious/${previous[selected].id}`);
 		if (e.keyCode === 112) return history.push('/help');
 	};
@@ -114,13 +115,16 @@ const Previous = () => {
 					<strong>&#8743;/&#8744;/PgUp/PgDn</strong> - Вверх/вниз
 				</div>
 				<div>
-					<strong>Enter</strong> - Переглянути
+					<strong>Enter/F3</strong> - Переглянути
 				</div>
 				<div>
 					<strong>Alt &#60;</strong> - Повернутися назад
 				</div>
 				<div>
 					<strong>Alt &#62;</strong> - Повернутися вперед
+				</div>
+				<div>
+					<strong>Home</strong> - Повернутися на головну
 				</div>
 			</div>
 		</div>

@@ -48,7 +48,6 @@ const Diagnostic = () => {
 	return (
 		<div>
 			<div className="nav-menu">
-				{console.log(form.blocks)}
 				<div
 					className="menu-item"
 					onClick={() => history.push(`/choosediagnostic/${patientId}`)}>
@@ -129,13 +128,13 @@ const Diagnostic = () => {
 									) : (
 										<label>
 											<input
-												type="text"
+												type="number"
 												name={`${id}_${id2}_0`}
 												onChange={handleFormChange}
 											/>
 											x
 											<input
-												type="text"
+												type="number"
 												name={`${id}_${id2}_1`}
 												onChange={handleFormChange}
 											/>
@@ -164,6 +163,9 @@ const Diagnostic = () => {
 				</div>
 				<div>
 					<strong>Enter</strong> - Продовжити
+				</div>
+				<div>
+					<strong>Home</strong> - Повернутися на головну
 				</div>
 			</div>
 		</div>
