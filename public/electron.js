@@ -1,7 +1,7 @@
 'use strict';
 
 const { app, BrowserWindow, shell } = require('electron');
-// if (require('electron-squirrel-startup')) return;
+if (require('electron-squirrel-startup')) return;
 const { ipcMain } = require('electron');
 const { Sequelize } = require('sequelize');
 const pizzip = require('pizzip');
@@ -37,6 +37,7 @@ const createWindow = () => {
 				? 'http://localhost:3000'
 				: `file://${path.join(__dirname, '../build/index.html')}`
 		);
+		// mainWindow.loadURL(`file://${path.join(__dirname, '../build/index.html')}`);
 		mainWindow.on('closed', () => (mainWindow = null));
 	});
 };
