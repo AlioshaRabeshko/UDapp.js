@@ -191,15 +191,21 @@ button:focus {
 			p {
 				margin: 10px 0 0 0;
 				text-align: center;
-				width: 200px;
+				max-width: 250px;
+				padding: 0 10px;
 			}
 		}
 	}
-	input[type='number'] {
+	input[type='text'] {
+		font-size: medium;
+	}
+	input[type='number'],
+	input[type='text'] {
 		width: 80px;
 		font-size: medium;
 	}
-	input[type='number']:focus {
+	input[type='number']:focus,
+	input[type='text']:focus {
 		outline: auto;
 		outline-color: red;
 	}
@@ -226,6 +232,9 @@ button:focus {
 			'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
 			'Helvetica Neue', sans-serif;
 		min-height: 60px;
+	}
+	.near-radio-input {
+		margin: 0 10px;
 	}
 }
 

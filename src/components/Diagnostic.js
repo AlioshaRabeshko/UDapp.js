@@ -23,6 +23,7 @@ const Diagnostic = () => {
 	const handleFormChange = (e) =>
 		setData({ ...data, [e.target.name]: e.target.value });
 	const handleSubmit = () => {
+		console.log(data);
 		let count = 0;
 		for (let key in data) if (data[key] !== '') count++;
 		if (count >= form.count)
@@ -33,6 +34,8 @@ const Diagnostic = () => {
 		ipcRenderer.send('getDiagnostic', { id: diagnosticId });
 		ipcRenderer.on('getDiagnostic-reply', (event, arg) => {
 			setForm(JSON.parse(arg.data.dataValues.form));
+			// console.log(JSON.parse(arg.data.dataValues.form));
+			// setForm();
 		});
 		ipcRenderer.on('createDocx-reply', (event, arg) => {
 			console.log('hello there?');
@@ -76,7 +79,7 @@ const Diagnostic = () => {
 				<h1>{form.name}</h1>
 				{form.blocks.map((el, id) => (
 					<div className="block" key={id}>
-						<h3>{el.name}</h3>
+						{el.name ? <h3>{el.name}</h3> : ''}
 						{el.inputs.map((el, id2) => (
 							<div className="field" key={id2}>
 								{el.prelabel ? <p>{el.prelabel}</p> : ''}
@@ -115,14 +118,79 @@ const Diagnostic = () => {
 													{el}
 												</label>
 											))
+										) : el.type === 'select' ? (
+											<label>
+												<input
+													type="text"
+													name={`${id}_${id2}`}
+													list={`${id}_${id2}`}
+													onChange={handleFormChange}
+												/>
+												<datalist id={`${id}_${id2}`}>
+													{el.values.map((el, id) => (
+														<option key={id}>{el}</option>
+													))}
+												</datalist>
+											</label>
+										) : el.type === 'text' ? (
+											<label>
+												<input
+													type="text"
+													name={`${id}_${id2}`}
+													onChange={handleFormChange}
+													value={
+														data[`${id}_${id2}`] !== el.radiolabel
+															? data[`${id}_${id2}`]
+															: ''
+													}
+												/>
+												{el.afterlabel ? ` ${el.afterlabel}` : ''}
+												{el.radio ? (
+													<label>
+														<input
+															type="radio"
+															name={`${id}_${id2}`}
+															onChange={handleFormChange}
+															value={el.radiolabel}
+															checked={data[`${id}_${id2}`] === el.radiolabel}
+														/>
+														{el.radiolabel}
+													</label>
+												) : (
+													''
+												)}
+											</label>
 										) : (
 											<label>
 												<input
 													type="number"
 													name={`${id}_${id2}`}
-													onChange={handleFormChange}
+													onChange={(e) =>
+														setData({
+															...data,
+															[e.target.name]: e.target.value,
+														})
+													}
+													value={
+														data[`${id}_${id2}`] &&
+														data[`${id}_${id2}`] !== el.radiolabel
+															? data[`${id}_${id2}`]
+															: ''
+													}
 												/>
 												{el.afterlabel ? ` ${el.afterlabel}` : ''}
+												{el.radio ? (
+													<label>
+														<input
+															type="radio"
+															name={`${id}_${id2}`}
+															onChange={handleFormChange}
+															value={el.radiolabel}
+															checked={data[`${id}_${id2}`] === el.radiolabel}
+														/>
+														{el.radiolabel}
+													</label>
+												) : null}
 											</label>
 										)
 									) : (
@@ -151,6 +219,7 @@ const Diagnostic = () => {
 					name="conclusion"
 					onChange={handleFormChange}></textarea>
 				<div className="button" onClick={handleSubmit}>
+					{/* <div className="button" onClick={() => console.log(data)}> */}
 					Продовжити
 				</div>
 			</div>

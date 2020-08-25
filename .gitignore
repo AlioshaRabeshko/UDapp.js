@@ -4,13 +4,15 @@
 /node_modules
 /.pnp
 .pnp.js
-/dist
 
 # testing
 /coverage
 
 # production
 /build
+/dist
+/output.docx
+/public/output.docx
 
 # misc
 .DS_Store
@@ -22,3 +24,5 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+output.docx
+output.docx
