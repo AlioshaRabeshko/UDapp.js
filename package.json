@@ -1,10 +1,10 @@
 {
 	"name": "udapp",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"private": true,
 	"main": "public/electron.js",
 	"author": "Aliosha Rabeshko",
-	"homepa1ge": "./",
+	"homepage": "./",
 	"dependencies": {
 		"@testing-library/jest-dom": "^4.2.4",
 		"@testing-library/react": "^9.5.0",
