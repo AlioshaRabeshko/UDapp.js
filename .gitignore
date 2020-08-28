@@ -28,3 +28,7 @@ output.docx
 updater/udapp
 updater/udapp.zip
 updater/node_modules
+updater/patients.db
+updater/diagnostics.db
+updater/settings.db
+updater/installed.txt

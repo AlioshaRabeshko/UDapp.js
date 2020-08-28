@@ -8,7 +8,7 @@ const os = require('os');
 
 const FILES = ['diagnostics.db', 'patients.db', 'settings.db', 'installed.txt'];
 const osData =
-	os.platform === 'win32'
+	os.platform() === 'win32'
 		? {
 				download:
 					'http://s3.eu-central-1.amazonaws.com/udapp.bucket/win-unpacked.zip',
@@ -24,8 +24,8 @@ const osData =
 
 if (fs.existsSync('./udapp')) {
 	FILES.forEach((el) => {
-		const inputFile = `./udapp/${el}`;
-		if (fs.existsSync(inputFile)) fs.copyFileSync(inputFile, `./${el}`);
+		if (fs.existsSync(`./udapp/${el}`))
+			fs.copyFileSync(`./udapp/${el}`, `./${el}`);
 	});
 	rimraf.sync('./udapp');
 }
@@ -36,9 +36,6 @@ file.on('close', () => {
 	zip.extractAllTo('./');
 	fs.unlinkSync('./udapp.zip');
 	fs.renameSync(osData.folder, `./udapp`);
-	if (os.platform !== 'win32') fs.chmodSync(`./udapp/${osData.exe}`, '777');
-	FILES.forEach((el) => {
-		fs.copyFileSync(`./${el}`, `./udapp/${el}`);
-		fs.unlinkSync(`./${el}`);
-	});
+	if (os.platform() !== 'win32') fs.chmodSync('./udapp/udapp', '777');
+	FILES.forEach((el) => fs.copyFileSync(`./${el}`, `./udapp/${el}`));
 });
