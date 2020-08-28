@@ -4,7 +4,7 @@
 	"description": "App to update UDapp from s3",
 	"main": "index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"build": "pkg ."
 	},
 	"author": "AlioshaRabeshko",
 	"license": "ISC",
@@ -18,5 +18,8 @@
 		"assets": [
 			"./node_modules"
 		]
+	},
+	"devDependencies": {
+		"pkg": "^4.4.9"
 	}
 }
