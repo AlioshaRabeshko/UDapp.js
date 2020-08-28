@@ -25,4 +25,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 output.docx
-output.docx
+updater/udapp
+updater/udapp.zip
+updater/node_modules
