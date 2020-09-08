@@ -1,68 +1,21 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+У кожного лікаря, хто працює в кабінеті ультразвукової діагностики, є потреба створювати висновок з УЗ дослідження. Кожен раз потрібно вводити ім'я, дату народження, місце проживання, тип дослідження, тожо. У місцевій лікарні недавно купували програму для спрощення вводу даних, тому ідея була запозичена з неї. Так як оригінальний приклад був написаний під дос, було вирішено переписати подібний функціонал під більш сучасні операційні системи та створити більш дружній інтерфейс для роботи лікарів. Загальна ідея програми - зберігати дані пацієнтів і в випадку якщо пацієнт знову прийде на обслідування - не вводити дані знову, а брати їх з бази даних, крім того формувати та друкувати шаблон ворд документу. Таким чином можна спростити та прискорити створення висновку про обстеження.
 
-## Available Scripts
+Необхідний функціонал:
+- Зберігання відомостей про пацієнтів в базі даних, для подальшого використання в випадку повторної діагностики пацієнта.
+- Формування документу(шаблона документа) результату достідження та можливість їх редагування.
+- Дружній для користувача інтерфейс.
 
-In the project directory, you can run:
+Коротко про принцип роботи:
 
-### `npm start`
+- Лікар або його асистент знаходить дані про пацієнта в базі даних, якщо такого пацієнта немає, добавляє в базу. На слідуючому кроці вибирає тип обстеження.
+![alt text](https://i.imgur.com/v3eTeGU.png)
+- Лікар або асистент вводить дані
+![alt text](https://i.imgur.com/xZlRFuO.png)
+- Натискаючи кнопку продовжити, фармується ворд документ та запускається з стандартної програми(в лінуксі це libreoffice, в віндовсі - microsoft word). Можна відправити на друк, або відредагувати якщо шаблон не надав достатньо можливостей для повного вводу даних.
+![alt text](https://i.imgur.com/jWvaH0W.png)
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Крім того попередні обстеження зберігаються і при потребі можуть бути переглянуті та згенеровані текстові документи.
+![alt text](https://i.imgur.com/1ppf7Ai.png)
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+Ліцензія:
+UDapp is MIT licensed. Project coordinator: <Leflylll@gmail.com>
