@@ -31,7 +31,7 @@ const createWindow = () => {
 			frame: data[1].dataValues.value !== 'borderless',
 			fullscreen: data[1].dataValues.value === 'fullscreen',
 		});
-		// mainWindow.setMenu(null);
+		mainWindow.setMenu(null);
 		mainWindow.loadURL(
 			isDev
 				? 'http://localhost:3000'
